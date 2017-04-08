@@ -4,114 +4,75 @@ package com.shevtsod;
  * @author Daniel Shevtsov (SID: 200351253)
  */
 public class Client4 {
-    private ScannerWrapper input = new ScannerWrapper();
-
     /**
      * Main program entry point
+     *
      * @param args String arguments from console (unused)
      */
     public static void main(String[] args) {
-        System.out.println("ENSE 350 Lab 3 - Daniel Shevtsov (SID: 200351253)");
-        System.out.println("Enter \"h\" or \"help\" for a list of commands\n");
+        System.out.println("ENSE 350 Lab 4 - Daniel Shevtsov (SID: 200351253)");
+        System.out.println("\nTesting LU decomposition program with given matrix");
+        System.out.println("    3x_1  - 2x_2 + x_3  = -10");
+        System.out.println("    2x_1  + 6x_2 - 4x_3 =  44");
+        System.out.println("    -8x_1 - 2x_2 + 5x_3 = -26\n");
+        System.out.println("This equation is solved using LU decomposition following:");
+        System.out.println("    A * X = B   (A = coefficient matrix, X = solution vector, B = constants vector)");
+        System.out.println("    A = L * U   (decompose A into L and U)");
+        System.out.println("    B = L * Z   (solve for Z)");
+        System.out.println("    Z = U * X   (solve for X)");
 
-        Client4 client = new Client4();
-        String command;
+        System.out.println("\n**************************************************\n");
 
-        //Loop to take user commands and execute appropriate actions
-        do {
-            command = client.input.getString().toLowerCase();
+        Matrix matrixA, matrixL, matrixU, matrixB, matrixZ, matrixX, matrixLU;
 
-            switch(command) {
-                case "p1":case "problem 1":
-                    client.clientProblem1();
-                    break;
-                case "p2":case "problem 2":
-                    client.clientProblem2();
-                    break;
-                case "h":case "help":
-                    client.clientHelp();
-                    break;
-                case "q":case "quit":
-                    client.clientQuit();
-                    break;
-                default:
-                    System.out.println("ERROR: Unknown command \"" + command + "\". Enter \"help\" for a " +
-                            "list of available commands.");
-                    break;
-            }
+        //Create a new matrix A that corresponds to the system of equations
+        double[][] a = {
+                {3, -2, 1},
+                {2, 6, -4},
+                {-8, -2, 5}
+        };
+        matrixA = new Matrix(a, 3, 3);
 
-            //Simple line break divider
-            System.out.println();
+        //Create the constants vector B
+        double[][] b = {{-10}, {44}, {-26}};
+        matrixB = new Matrix(b, 3, 1);
 
-        } while(!command.equals("q") && !command.equals("quit"));
+        System.out.println("MATRIX A:");
+        Matrix.print(matrixA);
+        System.out.println("\nVECTOR B:");
+        Matrix.print(matrixB);
 
+        //Perform LU decomposition and extract L and U matrices from the returned LUDecomposition object
+        System.out.println("\nPerforming LU Decomposition...\n");
+        Matrix.LUDecomposition lu = matrixA.getLUDecomposition();
+        matrixL = lu.L;
+        matrixU = lu.U;
+
+        System.out.println("MATRIX L:");
+        Matrix.print(matrixL);
+        System.out.println("\nMATRIX U:");
+        Matrix.print(matrixU);
+
+        System.out.println("\nTesting that L * U = A");
+        System.out.println("\nMatrix L * U: ");
+        matrixLU = matrixL.multiply(matrixU);
+        Matrix.print(matrixLU);
+
+        System.out.println("\nL * U == A? " + (matrixLU.equals(matrixA) ? "TRUE" : "FALSE"));
+
+        System.out.println("\nSolving B = L * Z for Z");
+        matrixZ = Matrix.solveSystemByForwardSubstitution(matrixB, matrixL);
+
+        System.out.println("\nVECTOR Z:");
+        Matrix.print(matrixZ);
+
+        System.out.println("\nSolving Z = U * X for X");
+        matrixX = Matrix.solveSystemByBackwardSubstitution(matrixZ, matrixU);
+
+        System.out.println("\nVECTOR X (SOLUTIONS):");
+        Matrix.print(matrixX);
+
+        System.out.println("\nProgram completed successfully");
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //                                          COMMAND HANDLERS                                            //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * A client program for problem 1. Approximates x to an error of <0.01%  using the Newton-Raphson method
-     */
-    private void clientProblem1() {
-        System.out.println("*******************************************************************************");
-        System.out.println("* NOTE: For this method, only values greater than -0.5 and less than");
-        System.out.println("*       or equal to 10000 should be used. There are two different roots that");
-        System.out.println("*       the method can converge to, depending on the initial value.");
-        System.out.println("*******************************************************************************");
-
-        System.out.println("Enter initial value for x:");
-        double initX = input.getDouble();
-
-        //This object's constructor automatically calls methods to output results to the console
-        new Problem1(initX);
-    }
-
-    /**
-     * A client program for problem 2. Performs both the bisection and secant methods to solve problem 2
-     */
-    private void clientProblem2() {
-        System.out.println("*******************************************************************************");
-        System.out.println("* NOTE: For this problem, the only two required bounds are");
-        System.out.println("*          lower bound = -1 , upper bound = 0");
-        System.out.println("*                          AND");
-        System.out.println("*          lower bound = 0 , upper bound = 1");
-        System.out.println("*       Any other values have not been tested and may produce unexpected");
-        System.out.println("*       behaviour.");
-        System.out.println("*       For the secant method, enter two different approximate values for the");
-        System.out.println("*       root you wish the algorithm to approximate. (i.e. 1 & 2, -1 & 0, etc.)");
-        System.out.println("*******************************************************************************");
-
-        System.out.println("Enter lower limit for Bisection Method: ");
-        double initL = input.getDouble();
-        System.out.println("Enter upper limit for Bisection Method: ");
-        double initU = input.getDouble();
-        System.out.println("Enter initial value for x_1 for Secant Method:");
-        double x_1 = input.getDouble();
-        System.out.println("Enter initial value for x_2 for Secant Method:");
-        double x_2 = input.getDouble();
-
-        //This object's constructor automatically calls methods to output results to the console
-        new Problem2(initL, initU, x_1, x_2);
-    }
-
-    /**
-     * Print a formatted list of available commands to the user
-     */
-    private void clientHelp() {
-        System.out.println("LIST OF AVAILABLE COMMANDS:\n" +
-                "COMMAND          DESCRIPTION\n" +
-                "p1 / problem 1 - Solution to problem 1 (Newton-Raphson Method)\n" +
-                "p2 / problem 2 - Solution to problem 2 (Bisection and Secant Methods)\n" +
-                "h / help       - Display list of available commands\n" +
-                "q / quit       - Quit the program");
-    }
-
-    /**
-     * Perform final operations needed before quitting the program
-     */
-    private void clientQuit() {
-        System.out.println("INFO: Quitting program");
-    }
 }
